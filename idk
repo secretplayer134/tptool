@@ -1,0 +1,116 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+
+-- Vị trí teleport mặc định
+local targetPosition = Vector3.new(0, 0, 0)
+
+-- Lấy nhân vật, hỗ trợ respawn
+local function getCharacter()
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    return char, hrp
+end
+
+-- Tạo GUI chung
+local gui = Instance.new("ScreenGui")
+gui.Name = "PositionTeleportGui"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 400, 0, 70)
+frame.Position = UDim2.new(1, -390, 0, -60) -- góc trên phải
+frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+-- Mặc định GUI hiển thị
+frame.Visible = true
+
+-- Label hiển thị vị trí hiện tại
+local posLabel = Instance.new("TextLabel")
+posLabel.Size = UDim2.new(1, -10, 0, 25)
+posLabel.Position = UDim2.new(0, 5, 0, 5)
+posLabel.BackgroundTransparency = 1
+posLabel.TextColor3 = Color3.fromRGB(255,255,255)
+posLabel.Font = Enum.Font.Gotham
+posLabel.TextSize = 18
+posLabel.TextXAlignment = Enum.TextXAlignment.Left
+posLabel.TextYAlignment = Enum.TextYAlignment.Top
+posLabel.Parent = frame
+
+-- Hàm tạo Label cố định và TextBox chỉnh số
+local function createAxis(prefix, value, xOffset)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0, 20, 1, 0)
+    label.Position = UDim2.new(0, xOffset, 0, 10)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(255,255,255)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 18
+    label.Text = prefix.."="
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = frame
+
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(0, 50, 1, -50)
+    box.Position = UDim2.new(0, xOffset + 25, 0, 35)
+    box.BackgroundColor3 = Color3.fromRGB(50,50,50)
+    box.TextColor3 = Color3.fromRGB(255,255,255)
+    box.Font = Enum.Font.Gotham
+    box.TextSize = 18
+    box.Text = tostring(value)
+    box.ClearTextOnFocus = false
+    box.Parent = frame
+
+    return box
+end
+
+local xBox = createAxis("X", targetPosition.X, 10)
+local yBox = createAxis("Y", targetPosition.Y, 120)
+local zBox = createAxis("Z", targetPosition.Z, 230)
+
+-- Tick button dịch chuyển
+local tick = Instance.new("TextButton")
+tick.Size = UDim2.new(0, 70, 0, 70)
+tick.Position = UDim2.new(0.9, -40, 0, 0)
+tick.BackgroundColor3 = Color3.fromRGB(0,200,0)
+tick.Text = "✔"
+tick.Font = Enum.Font.Gotham
+tick.TextSize = 40
+tick.TextColor3 = Color3.fromRGB(255,255,255)
+tick.Parent = frame
+
+tick.MouseButton1Click:Connect(function()
+    local char, hrp = getCharacter()
+    local x = tonumber(xBox.Text)
+    local y = tonumber(yBox.Text)
+    local z = tonumber(zBox.Text)
+    if x and y and z then
+        targetPosition = Vector3.new(x, y, z)
+        hrp.CFrame = CFrame.new(targetPosition)
+    end
+end)
+
+-- Cập nhật vị trí hiện tại mỗi frame
+RunService.RenderStepped:Connect(function()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local pos = char.HumanoidRootPart.Position
+        posLabel.Text = string.format("Position: X=%d, Y=%d, Z=%d", pos.X, pos.Y, pos.Z)
+    end
+end)
+
+-- Hỗ trợ respawn, GUI vẫn hoạt động
+player.CharacterAdded:Connect(function()
+    local char, hrp = getCharacter()
+end)
+
+-- Bật/tắt GUI khi nhấn Right Ctrl
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == Enum.KeyCode.RightControl then
+        frame.Visible = not frame.Visible
+    end
+end)
