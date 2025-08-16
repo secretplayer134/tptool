@@ -21,10 +21,50 @@ gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 400, 0, 70)
-frame.Position = UDim2.new(1, -390, 0, -60) -- góc trên phải
+frame.Position = UDim2.new(1, -400, 0, -60) -- góc trên phải
 frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 frame.BorderSizePixel = 0
+frame.Active = true -- để nhận input
 frame.Parent = gui
+
+-- Làm GUI draggable thủ công
+local dragging, dragInput, dragStart, startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
+    )
+end
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
 
 -- Mặc định GUI hiển thị
 frame.Visible = true
@@ -75,7 +115,7 @@ local zBox = createAxis("Z", targetPosition.Z, 230)
 -- Tick button dịch chuyển
 local tick = Instance.new("TextButton")
 tick.Size = UDim2.new(0, 70, 0, 70)
-tick.Position = UDim2.new(0.9, -40, 0, 0)
+tick.Position = UDim2.new(0.9, -30, 0, 0)
 tick.BackgroundColor3 = Color3.fromRGB(0,200,0)
 tick.Text = "✔"
 tick.Font = Enum.Font.Gotham
