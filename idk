@@ -20,7 +20,7 @@ gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 400, 0, 70)
+frame.Size = UDim2.new(0, 400, 0, 75)
 frame.Position = UDim2.new(1, -400, 0, -60) -- góc trên phải
 frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
 frame.BorderSizePixel = 0
@@ -29,7 +29,6 @@ frame.Parent = gui
 
 -- Làm GUI draggable thủ công
 local dragging, dragInput, dragStart, startPos
-
 local function update(input)
     local delta = input.Position - dragStart
     frame.Position = UDim2.new(
@@ -39,13 +38,11 @@ local function update(input)
         startPos.Y.Offset + delta.Y
     )
 end
-
 frame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = frame.Position
-
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -53,13 +50,11 @@ frame.InputBegan:Connect(function(input)
         end)
     end
 end)
-
 frame.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
         dragInput = input
     end
 end)
-
 UserInputService.InputChanged:Connect(function(input)
     if input == dragInput and dragging then
         update(input)
@@ -114,12 +109,12 @@ local zBox = createAxis("Z", targetPosition.Z, 230)
 
 -- Tick button dịch chuyển
 local tick = Instance.new("TextButton")
-tick.Size = UDim2.new(0, 70, 0, 70)
-tick.Position = UDim2.new(0.9, -30, 0, 0)
+tick.Size = UDim2.new(0, 70, 0, 30)
+tick.Position = UDim2.new(0.9, -35, 0, 5)
 tick.BackgroundColor3 = Color3.fromRGB(0,200,0)
 tick.Text = "✔"
 tick.Font = Enum.Font.Gotham
-tick.TextSize = 40
+tick.TextSize = 30
 tick.TextColor3 = Color3.fromRGB(255,255,255)
 tick.Parent = frame
 
@@ -134,12 +129,33 @@ tick.MouseButton1Click:Connect(function()
     end
 end)
 
+-- 📌 Nút lấy vị trí hiện tại
+local getPos = Instance.new("TextButton")
+getPos.Size = UDim2.new(0, 70, 0, 30)
+getPos.Position = UDim2.new(0, 325, 0, 40)
+getPos.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
+getPos.Text = "📌Copy"
+getPos.Font = Enum.Font.Gotham
+getPos.TextSize = 18
+getPos.TextColor3 = Color3.fromRGB(255,255,255)
+getPos.Parent = frame
+
+getPos.MouseButton1Click:Connect(function()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local pos = char.HumanoidRootPart.Position
+        xBox.Text = tostring(math.floor(pos.X))
+        yBox.Text = tostring(math.floor(pos.Y))
+        zBox.Text = tostring(math.floor(pos.Z))
+    end
+end)
+
 -- Cập nhật vị trí hiện tại mỗi frame
 RunService.RenderStepped:Connect(function()
     local char = player.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
         local pos = char.HumanoidRootPart.Position
-        posLabel.Text = string.format("Position: X= %d, Y= %d, Z= %d", pos.X, pos.Y, pos.Z)
+        posLabel.Text = string.format(" X= %d				   Y= %d					Z= %d", pos.X, pos.Y, pos.Z)
     end
 end)
 
