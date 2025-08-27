@@ -155,7 +155,7 @@ RunService.RenderStepped:Connect(function()
     local char = player.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
         local pos = char.HumanoidRootPart.Position
-        posLabel.Text = string.format(" X= %d				   Y= %d					Z= %d", pos.X, pos.Y, pos.Z)
+        posLabel.Text = string.format(" X= %d Y= %d	Z= %d", pos.X, pos.Y, pos.Z)
     end
 end)
 
